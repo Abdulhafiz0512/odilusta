@@ -10,14 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
     "@tailwindcss/vite": "^4.1.6",
-    "expo-sqlite": "^15.2.10",
-    "firebase": "^11.7.3",
+    
     "lucide-react": "^0.510.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-native-sqlite-storage": "^6.0.1",
-    "sql.js": "^1.13.0",
+  
     "tailwindcss": "^4.1.6"
   },
   "devDependencies": {

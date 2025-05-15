@@ -1,79 +1,55 @@
 import { useState, useEffect } from 'react';
 import { Calculator, Home, PlusCircle, Edit2, Trash2, ShoppingCart, Upload, CheckCircle, ArrowLeft } from 'lucide-react';
-import initSqlJs from 'sql.js';
-
-let dbInstance = null;
+import { supabase } from './supabase';
 
 const db = {
-  async init() {
-    if (dbInstance) return;
-
-    const SQL = await initSqlJs({
-      locateFile: file => `https://sql.js.org/dist/${file}`
-    });
-
-    dbInstance = new SQL.Database();
-
-    // Create products table
-    dbInstance.run(`
-      CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        cost INTEGER NOT NULL,
-        image TEXT NOT NULL
-      );
-    `);
-
-    // Check if products table is empty
-    const result = dbInstance.exec("SELECT COUNT(*) as count FROM products");
-    const count = result[0].values[0][0];
-    if (count === 0) {
-      const initialProducts = [
-        { name: 'Wooden Chair', cost: 250000, image: '/api/placeholder/200/200' },
-        { name: 'Dining Table', cost: 1200000, image: '/api/placeholder/200/200' },
-        { name: 'Sofa Set', cost: 2500000, image: '/api/placeholder/200/200' },
-        { name: 'Bedroom Wardrobe', cost: 1800000, image: '/api/placeholder/200/200' },
-      ];
-
-      const stmt = dbInstance.prepare("INSERT INTO products (name, cost, image) VALUES (?, ?, ?)");
-      initialProducts.forEach(p => stmt.run([p.name, p.cost, p.image]));
-      stmt.free();
-    }
-  },
-
   async getProducts() {
-    const result = dbInstance.exec("SELECT * FROM products ORDER BY id");
-    if (result.length === 0) return [];
-    const columns = result[0].columns;
-    return result[0].values.map(row =>
-      Object.fromEntries(columns.map((col, i) => [col, row[i]]))
-    );
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('id');
+
+    if (error) throw error;
+    return data;
   },
 
   async addProduct(product) {
-    const stmt = dbInstance.prepare("INSERT INTO products (name, cost, image) VALUES (?, ?, ?)");
-    stmt.run([product.name, product.cost, product.image]);
-    stmt.free();
+    const { data, error } = await supabase
+      .from('products')
+      .insert([product])
+      .select();
 
-    // Get last inserted ID
-    const result = dbInstance.exec("SELECT last_insert_rowid() as id");
-    const id = result[0].values[0][0];
-    return { ...product, id };
+    if (error) throw error;
+    return data[0];
   },
 
   async updateProduct(product) {
-    const stmt = dbInstance.prepare("UPDATE products SET name = ?, cost = ?, image = ? WHERE id = ?");
-    stmt.run([product.name, product.cost, product.image, product.id]);
-    stmt.free();
-    return product;
+    const { data, error } = await supabase
+      .from('products')
+      .update({
+        name: product.name,
+        cost: product.cost,
+        image: product.image
+      })
+      .eq('id', product.id)
+      .select();
+
+    if (error) throw error;
+    return data[0];
   },
 
   async deleteProduct(id) {
-    const stmt = dbInstance.prepare("DELETE FROM products WHERE id = ?");
-    stmt.run([id]);
-    stmt.free();
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   }
 };
+
+
+
 
 
 
@@ -85,27 +61,11 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [newProduct, setNewProduct] = useState({ name: '', cost: '', image: '/api/placeholder/200/200' });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [pageHistory, setPageHistory] = useState(['home']);
-  const [dbInitialized, setDbInitialized] = useState(false);
+  const [dbInitialized, setDbInitialized] = useState(true);
   
-  // Initialize the database and load products on first render
-  useEffect(() => {
-    const initDatabase = async () => {
-      try {
-        await db.init();
-        setDbInitialized(true);
-        const loadedProducts = await db.getProducts();
-        setProducts(loadedProducts);
-      } catch (error) {
-        console.error('Error initializing database:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    initDatabase();
-  }, []);
+  
 
   // Reload products when the database is initialized
   useEffect(() => {
