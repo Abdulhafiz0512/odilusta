@@ -1,260 +1,127 @@
-
-// Mahsulotlar Page Component
-function MahsulotlarPage({ 
-  products, 
-  deleteProduct, 
-  setEditingProduct, 
-  editingProduct,
-  newProduct,
-  setNewProduct,
-  saveProduct,
-  formatCurrency,
-  handleImageUpload,
-  goToPage
-}) {
-  const [showAddForm, setShowAddForm] = useState(false);
-  
-  return (
-    <div className="flex flex-col space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-gray-800">Mahsulotlar ro'yxati</h2>
-        <button 
-          onClick={() => {
-            setEditingProduct(null);
-            setShowAddForm(!showAddForm);
-          }}
-          className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg flex items-center"
-        >
-          <PlusCircle size={20} className="mr-1" />
-          <span>Qo'shish</span>
-        </button>
-      </div>
-      
-      {/* Add/Edit Product Form */}
-      {(showAddForm || editingProduct) && (
-        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-          <h3 className="font-semibold mb-4">{editingProduct ? 'Mahsulotni tahrirlash' : 'Yangi mahsulot qo\'shish'}</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nomi</label>
-              <input 
-                type="text" 
-                value={editingProduct ? editingProduct.name : newProduct.name}
-                onChange={(e) => editingProduct 
-                  ? setEditingProduct({...editingProduct, name: e.target.value})
-                  : setNewProduct({...newProduct, name: e.target.value})
-                }
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-                placeholder="Mahsulot nomi"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Narxi (so'm)</label>
-              <input 
-                type="number" 
-                value={editingProduct ? editingProduct.cost : newProduct.cost}
-                onChange={(e) => editingProduct 
-                  ? setEditingProduct({...editingProduct, cost: Number(e.target.value)})
-                  : setNewProduct({...newProduct, cost: e.target.value})
-                }
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-                placeholder="Mahsulot narxi"
-              />
-            </div>
-            
-            {/* Image upload section */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rasm</label>
-              <div className="flex items-center space-x-4">
-                <img 
-                  src={editingProduct ? editingProduct.image : newProduct.image} 
-                  alt="Product preview" 
-                  className="h-20 w-20 object-cover border rounded-md"
-                />
-                <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md border border-gray-300 flex items-center">
-                  <Upload size={18} className="mr-2" />
-                  <span>Rasm yuklash</span>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={(e) => handleImageUpload(e, editingProduct ? 'edit' : 'new')}
-                  />
-                </label>
-              </div>
-            </div>
-            
-            <div className="flex space-x-2">
-              <button 
-                onClick={() => {
-                  saveProduct();
-                  setShowAddForm(false);
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
-              >
-                Saqlash
-              </button>
-              <button 
-                onClick={() => {
-                  setEditingProduct(null);
-                  setShowAddForm(false);
-                }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md"
-              >
-                Bekor qilish
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* Product Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Rasm
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nomi
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Narxi
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Amallar
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <img 
-                    src={product.image} 
-                    alt={product.name} 
-                    className="h-12 w-12 object-cover rounded"
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-blue-600">{formatCurrency(product.cost)}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={() => {
-                        setShowAddForm(true);
-                        setEditingProduct(product);
-                      }}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                    <button 
-                      onClick={() => deleteProduct(product.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            
-            {products.length === 0 && (
-              <tr>
-                <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                  Mahsulotlar ro'yxati bo'sh
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Calculator, Home, PlusCircle, Edit2, Trash2, ShoppingCart, Upload, CheckCircle, ArrowLeft } from 'lucide-react';
+import initSqlJs from 'sql.js';
 
-// Database connection setup
-// In a real app, this would be set up using a proper database connection library
+let dbInstance = null;
+
 const db = {
   async init() {
-    // Initialize the database if it doesn't exist
-    if (!localStorage.getItem('furnitureProducts')) {
-      localStorage.setItem('furnitureProducts', JSON.stringify([
-        { id: 1, name: 'Wooden Chair', cost: 250000, image: '/api/placeholder/200/200' },
-        { id: 2, name: 'Dining Table', cost: 1200000, image: '/api/placeholder/200/200' },
-        { id: 3, name: 'Sofa Set', cost: 2500000, image: '/api/placeholder/200/200' },
-        { id: 4, name: 'Bedroom Wardrobe', cost: 1800000, image: '/api/placeholder/200/200' },
-      ]));
+    if (dbInstance) return;
+
+    const SQL = await initSqlJs({
+      locateFile: file => `https://sql.js.org/dist/${file}`
+    });
+
+    dbInstance = new SQL.Database();
+
+    // Create products table
+    dbInstance.run(`
+      CREATE TABLE IF NOT EXISTS products (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        cost INTEGER NOT NULL,
+        image TEXT NOT NULL
+      );
+    `);
+
+    // Check if products table is empty
+    const result = dbInstance.exec("SELECT COUNT(*) as count FROM products");
+    const count = result[0].values[0][0];
+    if (count === 0) {
+      const initialProducts = [
+        { name: 'Wooden Chair', cost: 250000, image: '/api/placeholder/200/200' },
+        { name: 'Dining Table', cost: 1200000, image: '/api/placeholder/200/200' },
+        { name: 'Sofa Set', cost: 2500000, image: '/api/placeholder/200/200' },
+        { name: 'Bedroom Wardrobe', cost: 1800000, image: '/api/placeholder/200/200' },
+      ];
+
+      const stmt = dbInstance.prepare("INSERT INTO products (name, cost, image) VALUES (?, ?, ?)");
+      initialProducts.forEach(p => stmt.run([p.name, p.cost, p.image]));
+      stmt.free();
     }
   },
+
   async getProducts() {
-    // Get all products from the database
-    const products = localStorage.getItem('furnitureProducts');
-    return JSON.parse(products || '[]');
+    const result = dbInstance.exec("SELECT * FROM products ORDER BY id");
+    if (result.length === 0) return [];
+    const columns = result[0].columns;
+    return result[0].values.map(row =>
+      Object.fromEntries(columns.map((col, i) => [col, row[i]]))
+    );
   },
-  async saveProducts(products) {
-    // Save all products to the database
-    localStorage.setItem('furnitureProducts', JSON.stringify(products));
-  },
+
   async addProduct(product) {
-    // Add a new product to the database
-    const products = await this.getProducts();
-    const newId = Math.max(...products.map(p => p.id), 0) + 1;
-    const newProduct = { ...product, id: newId };
-    products.push(newProduct);
-    await this.saveProducts(products);
-    return newProduct;
+    const stmt = dbInstance.prepare("INSERT INTO products (name, cost, image) VALUES (?, ?, ?)");
+    stmt.run([product.name, product.cost, product.image]);
+    stmt.free();
+
+    // Get last inserted ID
+    const result = dbInstance.exec("SELECT last_insert_rowid() as id");
+    const id = result[0].values[0][0];
+    return { ...product, id };
   },
+
   async updateProduct(product) {
-    // Update an existing product in the database
-    const products = await this.getProducts();
-    const index = products.findIndex(p => p.id === product.id);
-    if (index !== -1) {
-      products[index] = product;
-      await this.saveProducts(products);
-      return product;
-    }
-    return null;
+    const stmt = dbInstance.prepare("UPDATE products SET name = ?, cost = ?, image = ? WHERE id = ?");
+    stmt.run([product.name, product.cost, product.image, product.id]);
+    stmt.free();
+    return product;
   },
+
   async deleteProduct(id) {
-    // Delete a product from the database
-    const products = await this.getProducts();
-    const newProducts = products.filter(p => p.id !== id);
-    await this.saveProducts(newProducts);
+    const stmt = dbInstance.prepare("DELETE FROM products WHERE id = ?");
+    stmt.run([id]);
+    stmt.free();
   }
 };
 
-// Initial products
-const initialProducts = [];
+
+
 
 // Main App Component
 export default function App() {
   const [page, setPage] = useState('home');
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [newProduct, setNewProduct] = useState({ name: '', cost: '', image: '/api/placeholder/200/200' });
   const [loading, setLoading] = useState(true);
   const [pageHistory, setPageHistory] = useState(['home']);
+  const [dbInitialized, setDbInitialized] = useState(false);
   
   // Initialize the database and load products on first render
   useEffect(() => {
-    const initDb = async () => {
-      await db.init();
-      const productsFromDb = await db.getProducts();
-      setProducts(productsFromDb);
-      setLoading(false);
+    const initDatabase = async () => {
+      try {
+        await db.init();
+        setDbInitialized(true);
+        const loadedProducts = await db.getProducts();
+        setProducts(loadedProducts);
+      } catch (error) {
+        console.error('Error initializing database:', error);
+      } finally {
+        setLoading(false);
+      }
     };
     
-    initDb();
+    initDatabase();
   }, []);
+
+  // Reload products when the database is initialized
+  useEffect(() => {
+    if (dbInitialized) {
+      const loadProducts = async () => {
+        try {
+          const loadedProducts = await db.getProducts();
+          setProducts(loadedProducts);
+        } catch (error) {
+          console.error('Error loading products:', error);
+        }
+      };
+      
+      loadProducts();
+    }
+  }, [dbInitialized]);
   
   const goToPage = (pageName) => {
     if (pageName === 'back') {
@@ -300,27 +167,35 @@ export default function App() {
   };
   
   const saveProduct = async () => {
-    if (editingProduct) {
-      await db.updateProduct(editingProduct);
-      const updatedProducts = await db.getProducts();
-      setProducts(updatedProducts);
-      setEditingProduct(null);
-    } else if (newProduct.name && newProduct.cost) {
-      await db.addProduct({ 
-        ...newProduct, 
-        cost: Number(newProduct.cost) 
-      });
-      const updatedProducts = await db.getProducts();
-      setProducts(updatedProducts);
-      setNewProduct({ name: '', cost: '', image: '/api/placeholder/200/200' });
+    try {
+      if (editingProduct) {
+        await db.updateProduct(editingProduct);
+        const updatedProducts = await db.getProducts();
+        setProducts(updatedProducts);
+        setEditingProduct(null);
+      } else if (newProduct.name && newProduct.cost) {
+        await db.addProduct({
+          ...newProduct,
+          cost: Number(newProduct.cost)
+        });
+        const updatedProducts = await db.getProducts();
+        setProducts(updatedProducts);
+        setNewProduct({ name: '', cost: '', image: '/api/placeholder/200/200' });
+      }
+    } catch (error) {
+      console.error('Error saving product:', error);
     }
   };
   
   const deleteProduct = async (id) => {
-    await db.deleteProduct(id);
-    const updatedProducts = await db.getProducts();
-    setProducts(updatedProducts);
-    setCart(cart.filter(item => item.product.id !== id));
+    try {
+      await db.deleteProduct(id);
+      const updatedProducts = await db.getProducts();
+      setProducts(updatedProducts);
+      setCart(cart.filter(item => item.product.id !== id));
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    }
   };
   
   // Handle image upload
@@ -537,7 +412,7 @@ function HisoblashPage({ products, cart, addProductToCart, calculateTotal, forma
   );
 }
 
-// Tanlanganlar Page Component (New)
+// Tanlanganlar Page Component
 function TanlanganlarPage({ cart, updateCartItemQuantity, calculateTotal, formatCurrency, goToPage }) {
   return (
     <div className="flex flex-col space-y-6">
@@ -625,3 +500,182 @@ function TanlanganlarPage({ cart, updateCartItemQuantity, calculateTotal, format
   );
 }
 
+// Mahsulotlar Page Component
+function MahsulotlarPage({ 
+  products, 
+  deleteProduct, 
+  setEditingProduct, 
+  editingProduct,
+  newProduct,
+  setNewProduct,
+  saveProduct,
+  formatCurrency,
+  handleImageUpload,
+  goToPage
+}) {
+  const [showAddForm, setShowAddForm] = useState(false);
+  
+  return (
+    <div className="flex flex-col space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-gray-800">Mahsulotlar ro'yxati</h2>
+        <button 
+          onClick={() => {
+            setEditingProduct(null);
+            setShowAddForm(!showAddForm);
+          }}
+          className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg flex items-center"
+        >
+          <PlusCircle size={20} className="mr-1" />
+          <span>Qo'shish</span>
+        </button>
+      </div>
+      
+      {/* Add/Edit Product Form */}
+      {(showAddForm || editingProduct) && (
+        <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+          <h3 className="font-semibold mb-4">{editingProduct ? 'Mahsulotni tahrirlash' : 'Yangi mahsulot qo\'shish'}</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nomi</label>
+              <input 
+                type="text" 
+                value={editingProduct ? editingProduct.name : newProduct.name}
+                onChange={(e) => editingProduct 
+                  ? setEditingProduct({...editingProduct, name: e.target.value})
+                  : setNewProduct({...newProduct, name: e.target.value})
+                }
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                placeholder="Mahsulot nomi"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Narxi (so'm)</label>
+              <input 
+                type="number" 
+                value={editingProduct ? editingProduct.cost : newProduct.cost}
+                onChange={(e) => editingProduct 
+                  ? setEditingProduct({...editingProduct, cost: Number(e.target.value)})
+                  : setNewProduct({...newProduct, cost: e.target.value})
+                }
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                placeholder="Mahsulot narxi"
+              />
+            </div>
+            
+            {/* Image upload section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rasm</label>
+              <div className="flex items-center space-x-4">
+                <img 
+                  src={editingProduct ? editingProduct.image : newProduct.image} 
+                  alt="Product preview" 
+                  className="h-20 w-20 object-cover border rounded-md"
+                />
+                <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md border border-gray-300 flex items-center">
+                  <Upload size={18} className="mr-2" />
+                  <span>Rasm yuklash</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => handleImageUpload(e, editingProduct ? 'edit' : 'new')}
+                  />
+                </label>
+              </div>
+            </div>
+            
+            <div className="flex space-x-2">
+              <button 
+                onClick={() => {
+                  saveProduct();
+                  setShowAddForm(false);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+              >
+                Saqlash
+              </button>
+              <button 
+                onClick={() => {
+                  setEditingProduct(null);
+                  setShowAddForm(false);
+                }}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md"
+              >
+                Bekor qilish
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Product Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Rasm
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Nomi
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Narxi
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Amallar
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {products.map((product) => (
+              <tr key={product.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <img 
+                    src={product.image} 
+                    alt={product.name} 
+                    className="h-12 w-12 object-cover rounded"
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-blue-600">{formatCurrency(product.cost)}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => {
+                        setShowAddForm(true);
+                        setEditingProduct(product);
+                      }}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button 
+                      onClick={() => deleteProduct(product.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            
+            {products.length === 0 && (
+              <tr>
+                <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
+                  Mahsulotlar ro'yxati bo'sh
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
